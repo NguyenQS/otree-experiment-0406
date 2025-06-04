@@ -1,5 +1,6 @@
-from otree.api import *
 import random
+
+from otree.api import *
 
 doc = """
 MATB-II und SSP kombiniert in einer App
@@ -10,9 +11,12 @@ class C(BaseConstants):
     NAME_IN_URL = 'experiment'
     PLAYERS_PER_GROUP = None
     #NUM_ROUNDS = 23  # 3 für MATB + 20 für SSP
-    NUM_ROUNDS = 6
+    NUM_ROUNDS = 10
     SSP_START_ROUND = 4
     GRID_SIZE = 10
+
+    FIXED_SSP_DIFFICULTY = [3, 4, 5, 4, 6, 5]  # z. B. für 6 SSP-Runden
+
 
 
 # === SUBSESSION, GROUP, PLAYER ===
@@ -45,10 +49,7 @@ class Player(BasePlayer):
         self.sequence = ','.join(map(str, seq))
 
     def update_difficulty(self):
-        if self.correct:
-            self.difficulty += 1
-        else:
-            self.difficulty = max(2, self.difficulty - 1)
+        pass # nicht mehr benutzt
 
 
 # === MATB PAGES ===
@@ -73,14 +74,15 @@ class SSP_Task(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number >= C.SSP_START_ROUND and player.round_number < C.NUM_ROUNDS
+        return C.SSP_START_ROUND <= player.round_number < C.NUM_ROUNDS
+
 
     @staticmethod
     def get_timeout_seconds(player: Player):
-        if player.round_number > C.SSP_START_ROUND:
-            prev = player.in_round(player.round_number - 1)
-            player.difficulty = prev.difficulty
+        index = player.round_number - C.SSP_START_ROUND
+        player.difficulty = C.FIXED_SSP_DIFFICULTY[index]
         return 30 if player.difficulty >= 6 else 15
+
 
     @staticmethod
     def before_render(player: Player):
@@ -89,14 +91,14 @@ class SSP_Task(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        if player.round_number > C.SSP_START_ROUND:
-            prev_player = player.in_round(player.round_number - 1)
-            player.difficulty = prev_player.difficulty
+        index = player.round_number - C.SSP_START_ROUND
+        player.difficulty = C.FIXED_SSP_DIFFICULTY[index]
         player.generate_sequence()
         return {
             'sequence': player.sequence,
             'difficulty': player.difficulty,
         }
+
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
@@ -105,8 +107,9 @@ class SSP_Task(Page):
         player.correct = correct_seq == response_seq
         if player.correct:
             player.max_span = max(player.max_span, player.difficulty)
-        player.update_difficulty()
+        # kein update_difficulty mehr nötig
         player.total_time_used = sum(p.timeout_seconds for p in player.in_all_rounds())
+
 
 
 class SSP_Results(Page):
@@ -124,4 +127,6 @@ class SSP_Results(Page):
 page_sequence = [
     MATB_Task,
     MATB_Page,
-] + [SSP_Task] * (C.NUM_ROUNDS - C.SSP_START_ROUND) + [SSP_Results]
+    SSP_Task,
+    SSP_Results
+] #+ [SSP_Task] * (C.NUM_ROUNDS - C.SSP_START_ROUND) + [SSP_Results]
