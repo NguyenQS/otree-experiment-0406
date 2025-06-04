@@ -9,7 +9,8 @@ MATB-II und SSP kombiniert in einer App
 class C(BaseConstants):
     NAME_IN_URL = 'experiment'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 23  # 3 für MATB + 20 für SSP
+    #NUM_ROUNDS = 23  # 3 für MATB + 20 für SSP
+    NUM_ROUNDS = 6
     SSP_START_ROUND = 4
     GRID_SIZE = 10
 
@@ -121,7 +122,6 @@ class SSP_Results(Page):
 
 # === PAGE SEQUENCE ===
 page_sequence = [
-    MATB_Task,
     MATB_Task,
     MATB_Page,
 ] + [SSP_Task] * (C.NUM_ROUNDS - C.SSP_START_ROUND) + [SSP_Results]
