@@ -1,0 +1,74 @@
+{% extends "global/Page.html" %}
+{% block content %}
+
+<style>
+  .grid-container {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: auto;
+  }
+  .square {
+    width: 60px;
+    height: 60px;
+    position: absolute;
+    background-color: lightgray;
+    border: 1px solid #333;
+    cursor: pointer;
+  }
+</style>
+
+<h3>Merke dir die Reihenfolge der leuchtenden Felder</h3>
+
+<div class="grid-container" id="grid">
+  {% for i in range(10) %}
+    <div class="square" id="sq{{ i }}" data-id="{{ i }}"></div>
+  {% endfor %}
+</div>
+
+<input type="hidden" name="response" id="responseInput">
+
+<script>
+  const positions = [
+    [20, 20], [300, 20], [160, 50],
+    [60, 160], [240, 120], [180, 200],
+    [20, 300], [320, 280], [100, 250], [250, 330]
+  ];
+  const sequence = "{{ sequence }}";
+  const grid = document.getElementById('grid');
+  const squares = grid.getElementsByClassName('square');
+
+  // Positionieren
+  [...squares].forEach((el, idx) => {
+    el.style.left = positions[idx][0] + 'px';
+    el.style.top = positions[idx][1] + 'px';
+  });
+
+  // Zeige Sequenz
+  async function showSequence() {
+    for (let id of sequence.split(',')) {
+      let sq = document.getElementById('sq' + id);
+      sq.style.backgroundColor = 'yellow';
+      await new Promise(r => setTimeout(r, 500));
+      sq.style.backgroundColor = 'lightgray';
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+
+  // Eingabe erfassen
+  let clicked = [];
+  [...squares].forEach(sq => {
+    sq.addEventListener('click', () => {
+      const id = sq.dataset.id;
+      if (!clicked.includes(id)) {
+        clicked.push(id);
+        sq.style.backgroundColor = 'blue';
+        document.getElementById('responseInput').value = clicked.join(',');
+      }
+    });
+  });
+
+  showSequence();
+</script>
+
+{% endblock %}

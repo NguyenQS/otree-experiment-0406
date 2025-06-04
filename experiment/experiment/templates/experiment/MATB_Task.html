@@ -1,0 +1,113 @@
+{% extends 'global/Page.html' %}
+{% load static %}
+
+{% block title %}
+<link rel="stylesheet" href="{% static 'styles/matb.css' %}">
+
+<div class="d-flex justify-content-center" style="margin-top: -50px">
+  <h2 style="margin-bottom:20px">MATB-II</h2>
+</div>
+
+<!-- neu-->
+<div class="d-flex justify-content-center">
+  <h5 id="levelDisplay" style="color: #888;">Level: wird geladen...</h5>
+</div>
+<!-- neu Ende -->
+
+{% endblock %}
+
+{% block content %}
+{% comment %} 
+I will follow the style of the other task-pages and use hidden formfield mappings to
+send data to the server but I would recommend looking into different functionality
+like live_method from oTree or some API-Endpoints to handle this. 
+Hidden html-elements seem kinda "hacky".
+After all, these hidden elements would theoretically allow users to modify their score
+using "devtools" or "view source".
+{% endcomment %}
+<input type="hidden" name="sysmon_score" id="sysmonScore" value="0"/>
+<input type="hidden" name="tracking_score" id="trackingScore" value="0"/>
+<input type="hidden" name="comm_score" id="commScore" value="0"/>
+<input type="hidden" name="resman_score" id="resmanScore" value="0"/>
+
+{% comment %} <iframe class="unity_iframe" id="unityIframe" src="{% static 'matb/index.html' %}"></iframe> {% endcomment %}
+<canvas id="unity-canvas" width=960 height=600 tabindex="-1" style="width: 960px; height: 600px; background: #1F1F20"></canvas>
+<!-- NEXT BUTTON -->
+<div>
+    <h4 id="timeup"  style="text-align: center; display:none">Time is up! Click the button below to continue.</h4>
+    <div class="d-flex justify-content-center" style="display:none">
+        <button class="btn-primary btn-lg" id="nextbtn"  style="display:none">Next</button>
+    </div>
+</div>
+
+<script src="{% static 'matb/Build/webgl.loader.js' %}"></script>
+<script>
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    // Mobile device style: fill the whole browser client area with the game canvas:
+    var meta = document.createElement('meta');
+    meta.name = 'viewport';
+    meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+    document.getElementsByTagName('head')[0].appendChild(meta);
+
+    var canvas = document.querySelector("#unity-canvas");
+    //canvas.style.width = "100%";
+    //canvas.style.height = "100%";
+    //canvas.style.position = "fixed";
+
+    document.body.style.textAlign = "left";
+  }
+
+  let myUnityInstance;
+
+  createUnityInstance(document.querySelector("#unity-canvas"), {
+    arguments: [],
+    dataUrl: "{% static 'matb/Build/webgl.data' %}",
+    frameworkUrl: "{% static 'matb/Build/webgl.framework.js' %}",
+    codeUrl: "{% static 'matb/Build/webgl.wasm' %}",
+    streamingAssetsUrl: "StreamingAssets",
+    companyName: "KIT",
+    productName: "MATB-II",
+    productVersion: "1.0",
+    // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+    // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+  }).then((newUnityInstance) => {
+    myUnityInstance = newUnityInstance;
+  });
+
+  function sendDifficultyLevel() {
+    console.log("Received request to send difficulty level. Round: " + {{ player.round_number }});
+    let level = 'level1'; 
+    if ({{ player.round_number }} === 2) {
+      level = 'level2';
+    } else if ({{ player.round_number }} === 3) {
+      level = 'level3';
+    }
+
+    // Zeige den Level-Namen auf der Seite an
+    const display = document.getElementById("levelDisplay");
+    if (display) {
+      display.innerText = "Level: " + level;
+    }
+
+    myUnityInstance.SendMessage('WebBridgeObject', 'SetLevel', level);
+    console.log("Sent level " + level + " to unity iframe.");
+  }
+
+
+  function receivePerformanceData(data) {
+    console.log(`Received performance data: ${data}`);
+    const scores = data.split(";");
+    if(scores.length === 4) {
+      document.getElementById("sysmonScore").value = scores[0];
+      document.getElementById("trackingScore").value = scores[1];
+      document.getElementById("commScore").value = scores[2];
+      document.getElementById("resmanScore").value = scores[3];
+    }
+  }
+
+  function quitGameInstance() {
+    document.getElementById("nextbtn").style.display = "block";
+    document.getElementById("timeup").style.display = "block";
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+.unity_iframe {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  inset: 0;
+  overflow: hidden;
+  padding-top: 100px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.unity_iframe .webgl-content .footer {
+  display: none;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  gap: 1rem;
+}
