@@ -15,14 +15,14 @@ MATB-II, N-Back und SSP kombiniert in einer App
 class C(BaseConstants):
     NAME_IN_URL = 'experiment'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 14  # z. B. 3 MATB + 10 N-Back + 9 SSP
+    NUM_ROUNDS = 52  # z. B. 3 MATB + 10 N-Back + 9 SSP
     GRID_SIZE = 10
-    SSP_START_ROUND = 6
+    SSP_START_ROUND = 44
     FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4]  # ggf. kürzen oder anpassen
 
 # Erst hier definieren, nachdem C.NUM_ROUNDS existiert
 ALLOWED_LETTERS = list(string.ascii_uppercase[:10])
-N_BACK_STIMULI = [random.choice(ALLOWED_LETTERS) for _ in range(40)]
+N_BACK_STIMULI = [random.choice(ALLOWED_LETTERS) for _ in range(C.NUM_ROUNDS)]
 
 
 # === SUBSESSION, GROUP, PLAYER ===
@@ -40,13 +40,9 @@ class Player(BasePlayer):
     resman_score = models.IntegerField(min=0, max=100, blank=True)
 
     # N-Back
-    '''
     reaction_time = models.FloatField(blank=True)
     clicked = models.BooleanField(blank=True)
     is_correct = models.BooleanField(blank=True)
-    '''
-    nback_data_json = models.LongStringField(blank=True)
-
 
     # SSP
     sequence = models.LongStringField(blank=True)
@@ -91,8 +87,6 @@ class MATB_Page(Page):
 '''
 
 # --- N-BACK ---
-
-'''
 class NBack(Page):
     form_model = 'player'
     form_fields = ['reaction_time', 'clicked']
@@ -116,33 +110,6 @@ class NBack(Page):
             'letter': Player.current_letter(player),
             'target': Player.target_letter(player),
         }
-'''
-
-
-class NBackBatch(Page):
-    form_model = 'player'
-    form_fields = ['nback_data_json']  # z.B. JSON-String mit allen Klick-Infos
-
-    @staticmethod
-    def is_displayed(player):
-        # Beispiel: nur Runde 4 und 24 zeigen
-        return player.round_number in [4, 24]
-
-    @staticmethod
-    def vars_for_template(player):
-        n_trials = 40
-        n_back = 2
-        letters = list('ABCDEFGHIJ')
-        stimuli = [random.choice(letters) for _ in range(n_trials)]
-        targets = []
-        for i in range(n_trials):
-            if i < n_back:
-                targets.append(False)
-            else:
-                targets.append(stimuli[i] == stimuli[i - n_back])
-        return dict(stimuli=stimuli, targets=targets)
-
-
 
 # --- SSP ---
 class SSP_Task(Page):
@@ -151,7 +118,7 @@ class SSP_Task(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number in range(6, 15)
+        return player.round_number in range(44, 53)
 
     @staticmethod
     def get_timeout_seconds(player: Player):
@@ -186,22 +153,17 @@ class SSP_Task(Page):
 class SSP_Results(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number == 15
+        return player.round_number == 52
 
     @staticmethod
     def vars_for_template(player: Player):
         max_span = max(p.max_span for p in player.in_all_rounds())
         return {'max_span': max_span}
 
-class TestPage(Page):
-    template_name = 'experiment/Test.html'
-
-
-
 # === SEQUENCE ===
 page_sequence = [
     MATB_Task,
-    NBackBatch,
+    NBack,
     SSP_Task,
     SSP_Results,
 ]

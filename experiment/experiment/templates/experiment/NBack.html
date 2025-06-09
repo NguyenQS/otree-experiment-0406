@@ -1,0 +1,61 @@
+{% extends "global/Page.html" %}
+{% block content %}
+
+    <h1 id="letterBox" style="font-size:80px; display:inline-block; padding:20px; border-radius:15px;">
+        {{ letter }}
+    </h1>
+    <br><br>
+    <button id="clickBtn">Klick</button>
+
+    <form id="form" method="post">
+        <input type="hidden" name="reaction_time">
+        <input type="hidden" name="clicked">
+    </form>
+
+    <script>
+        const startTime = new Date().getTime();
+        let clicked = false;
+        const target = "{{ target }}";
+        const letter = "{{ letter }}";
+
+        const letterBox = document.getElementById('letterBox');
+
+        function showFeedback(color) {
+            letterBox.style.backgroundColor = color;
+        }
+
+        document.getElementById('clickBtn').addEventListener('click', () => {
+            const reactionTime = (new Date().getTime() - startTime) / 1000;
+            document.getElementsByName('reaction_time')[0].value = reactionTime;
+            document.getElementsByName('clicked')[0].value = true;
+            clicked = true;
+
+            if (target && letter === target) {
+                showFeedback('lightgreen');
+            } else {
+                showFeedback('lightcoral');
+            }
+        });
+
+        setTimeout(() => {
+            if (!clicked) {
+                document.getElementsByName('reaction_time')[0].value = 2.6;
+                document.getElementsByName('clicked')[0].value = false;
+            }
+
+            setTimeout(() => {
+                document.getElementById('form').submit();
+            }, 400);
+        }, 2600);
+    </script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+

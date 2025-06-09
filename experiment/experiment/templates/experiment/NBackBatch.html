@@ -1,0 +1,93 @@
+{% extends "global/Page.html" %}
+{% block content %}
+
+<h1 id="letterBox" style="font-size:80px; display:inline-block; padding:20px; border-radius:15px;">
+    <!-- Buchstabe wird hier eingefügt -->
+</h1>
+<br>
+<button id="clickBtn" disabled>Klick</button>
+
+<form id="form" method="post">
+    <input type="hidden" name="nback_data_json" id="nbackDataInput">
+</form>
+
+<script>
+    const stimuli = {{ stimuli|json }};
+    const targets = {{ targets|json }};
+
+
+    let currentIndex = 0;
+    const letterBox = document.getElementById('letterBox');
+    const clickBtn = document.getElementById('clickBtn');
+    let nbackData = [];  // Hier speichern wir alle Reaktionen: {index, letter, clicked, correct, reaction_time}
+
+    function showLetter(letter) {
+        letterBox.textContent = letter;
+        letterBox.style.backgroundColor = '';
+        clickBtn.disabled = false;
+    }
+
+    function showFeedback(isCorrect) {
+        letterBox.style.backgroundColor = isCorrect ? 'lightgreen' : 'lightcoral';
+    }
+
+    function nextTrial() {
+        if (currentIndex >= stimuli.length) {
+            // alle Trials durch, Daten absenden
+            document.getElementById('nbackDataInput').value = JSON.stringify(nbackData);
+            document.getElementById('form').submit();
+            return;
+        }
+
+        const letter = stimuli[currentIndex];
+        const target = targets[currentIndex];
+        showLetter(letter);
+
+        let clicked = false;
+        let reactionStart = performance.now();
+
+        clickBtn.onclick = () => {
+            if (clicked) return;  // nur einmal klicken pro Buchstabe
+
+            clicked = true;
+            const reactionTime = (performance.now() - reactionStart) / 1000;
+
+            // Ist das klicken korrekt? (Klick nur sinnvoll bei target == true)
+            const correct = target && clicked;
+
+            showFeedback(correct);
+
+            nbackData.push({
+                index: currentIndex,
+                letter: letter,
+                clicked: true,
+                correct: correct,
+                reaction_time: reactionTime
+            });
+
+            clickBtn.disabled = true;
+        };
+
+        // Timeout für 3 Sekunden pro Buchstabe (Reaktionszeit + Pause)
+        setTimeout(() => {
+            if (!clicked) {
+                // Kein Klick in 3 Sekunden = false Antwort
+                nbackData.push({
+                    index: currentIndex,
+                    letter: letter,
+                    clicked: false,
+                    correct: !target,  // korrekt wenn target false und kein Klick
+                    reaction_time: null
+                });
+            }
+            currentIndex++;
+            clickBtn.disabled = true;
+            nextTrial();
+        }, 3000);
+    }
+
+    nextTrial();
+</script>
+
+{% endblock %}
+
