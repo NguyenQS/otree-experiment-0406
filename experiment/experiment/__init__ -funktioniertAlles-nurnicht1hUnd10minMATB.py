@@ -7,20 +7,18 @@ doc = """
 MATB-II, N-Back und SSP kombiniert in einer App
 """
 
+# === GLOBALE KONSTANTEN ===
+#ALLOWED_LETTERS = list(string.ascii_uppercase[:10])  # A–J
+#N_BACK_STIMULI = [random.choice(ALLOWED_LETTERS) for _ in range(C.NUM_ROUNDS)]
 
 # === KONSTANTEN ===
 class C(BaseConstants):
     NAME_IN_URL = 'experiment'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 55  
-    MATB_ROUNDS = [1, 2, 14, 15, 27, 28, 40, 41, 53, 54]
-    MATB_LEVEL_SEQUENCE = ['level1', 'level2', 'level3', 'level1', 'level2',
-                           'level3', 'level1', 'level2', 'level3', 'level1']
+    NUM_ROUNDS = 14  # z. B. 3 MATB + 10 N-Back + 9 SSP
     GRID_SIZE = 10
     SSP_START_ROUND = 6
-    #FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4]  # die Sequenz wird insgesamt viermal gespielt, siehe unten
-    FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4]  # ggf. kürzen oder anpassen
-
+    FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4]  # ggf. kürzen oder anpassen
 
 # Erst hier definieren, nachdem C.NUM_ROUNDS existiert
 ALLOWED_LETTERS = list(string.ascii_uppercase[:10])
@@ -42,6 +40,11 @@ class Player(BasePlayer):
     resman_score = models.IntegerField(min=0, max=100, blank=True)
 
     # N-Back
+    '''
+    reaction_time = models.FloatField(blank=True)
+    clicked = models.BooleanField(blank=True)
+    is_correct = models.BooleanField(blank=True)
+    '''
     nback_data_json = models.LongStringField(blank=True)
 
 
@@ -77,45 +80,67 @@ class MATB_Task(Page):
 
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number in C.MATB_ROUNDS
+        return player.round_number in [1, 2, 3]
 
+
+'''
+class MATB_Page(Page):
     @staticmethod
-    def vars_for_template(player: Player):
-        index = C.MATB_ROUNDS.index(player.round_number)
-        level = C.MATB_LEVEL_SEQUENCE[index]
-        return {'matb_level': level}
-
-
+    def is_displayed(player: Player):
+        return player.round_number == 3
+'''
 
 # --- N-BACK ---
 
+'''
+class NBack(Page):
+    form_model = 'player'
+    form_fields = ['reaction_time', 'clicked']
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number in range(4, 44)
+
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened):
+        current = Player.current_letter(player)
+        target = Player.target_letter(player)
+        if player.clicked is not None and target is not None:
+            player.is_correct = player.clicked and (current == target)
+        else:
+            player.is_correct = False
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {
+            'letter': Player.current_letter(player),
+            'target': Player.target_letter(player),
+        }
+'''
+
+
 class NBackBatch(Page):
     form_model = 'player'
-    form_fields = ['nback_data_json']
-
-    # Runden, in denen der N-Back gezeigt werden soll
-    NBACK_ROUNDS = [3, 16, 29, 42, 55]
+    form_fields = ['nback_data_json']  # z.B. JSON-String mit allen Klick-Infos
 
     @staticmethod
     def is_displayed(player):
-        return player.round_number in NBackBatch.NBACK_ROUNDS
+        # Beispiel: nur Runde 4 und 24 zeigen
+        return player.round_number in [4, 24]
 
     @staticmethod
     def vars_for_template(player):
         n_trials = 40
         n_back = 2
         letters = list('ABCDEFGHIJ')
-
         stimuli = [random.choice(letters) for _ in range(n_trials)]
-
         targets = []
         for i in range(n_trials):
             if i < n_back:
                 targets.append(False)
             else:
                 targets.append(stimuli[i] == stimuli[i - n_back])
-
-        return dict(stimuli=stimuli, targets=targets, n_back=n_back)
+        return dict(stimuli=stimuli, targets=targets)
 
 
 
@@ -124,15 +149,13 @@ class SSP_Task(Page):
     form_model = 'player'
     form_fields = ['response']
 
-    SSP_ROUNDS = list(range(4, 13)) + list(range(17, 26)) + list(range(30, 39)) + list(range(43, 52))
-
     @staticmethod
     def is_displayed(player: Player):
-        return player.round_number in SSP_Task.SSP_ROUNDS
+        return player.round_number in range(6, 15)
 
     @staticmethod
     def get_timeout_seconds(player: Player):
-        index = SSP_Task.SSP_ROUNDS.index(player.round_number)
+        index = player.round_number - C.SSP_START_ROUND
         player.difficulty = C.FIXED_SSP_DIFFICULTY[index]
         return 20 if player.difficulty >= 6 else 10
 
@@ -143,7 +166,7 @@ class SSP_Task(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        index = SSP_Task.SSP_ROUNDS.index(player.round_number)
+        index = player.round_number - C.SSP_START_ROUND
         player.difficulty = C.FIXED_SSP_DIFFICULTY[index]
         player.generate_sequence()
         return {
@@ -160,29 +183,18 @@ class SSP_Task(Page):
             player.max_span = max(player.max_span, player.difficulty)
         player.total_time_used = sum(p.timeout_seconds for p in player.in_all_rounds())
 
-
 class SSP_Results(Page):
-    SSP_BLOCKS = [
-        range(4, 13),   # Block 1
-        range(17, 26),  # Block 2
-        range(30, 39),  # Block 3
-        range(43, 52),  # Block 4
-    ]
-
     @staticmethod
     def is_displayed(player: Player):
-        # Am Ende jedes Blocks anzeigen (nach letzter Runde des Blocks)
-        return player.round_number in [13, 26, 39, 52]
+        return player.round_number == 15
 
     @staticmethod
     def vars_for_template(player: Player):
-        current_round = player.round_number
-        for block in SSP_Results.SSP_BLOCKS:
-            if current_round == block.stop:
-                block_players = [p for p in player.in_rounds(block.start, block.stop - 1)]
-                max_span = max(p.max_span for p in block_players)
-                return {'max_span': max_span}
-        return {'max_span': 0}  # Fallback
+        max_span = max(p.max_span for p in player.in_all_rounds())
+        return {'max_span': max_span}
+
+class TestPage(Page):
+    template_name = 'experiment/Test.html'
 
 
 

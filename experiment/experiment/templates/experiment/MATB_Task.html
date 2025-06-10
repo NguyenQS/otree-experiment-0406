@@ -75,23 +75,21 @@ using "devtools" or "view source".
   });
 
   function sendDifficultyLevel() {
-    console.log("Received request to send difficulty level. Round: " + {{ player.round_number }});
-    let level = 'level1'; 
-    if ({{ player.round_number }} === 2) {
-      level = 'level2';
-    } else if ({{ player.round_number }} === 3) {
-      level = 'level3';
-    }
+  // Nutze die Template-Variable {{ matb_level }} aus Python
+  let level = "{{ matb_level }}";  // <-- Wichtig: in Anführungszeichen für JS String
+  
+  console.log("Sending difficulty level:", level);
 
-    // Zeige den Level-Namen auf der Seite an
-    const display = document.getElementById("levelDisplay");
-    if (display) {
-      display.innerText = "Level: " + level;
-    }
-
-    myUnityInstance.SendMessage('WebBridgeObject', 'SetLevel', level);
-    console.log("Sent level " + level + " to unity iframe.");
+  // Zeige den Level-Namen auf der Seite an
+  const display = document.getElementById("levelDisplay");
+  if (display) {
+    display.innerText = "Level: " + level;
   }
+
+  myUnityInstance.SendMessage('WebBridgeObject', 'SetLevel', level);
+  console.log("Sent level " + level + " to unity instance.");
+  }
+
 
 
   function receivePerformanceData(data) {
