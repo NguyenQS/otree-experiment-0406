@@ -23,8 +23,9 @@ class C(BaseConstants):
 
 
 # Erst hier definieren, nachdem C.NUM_ROUNDS existiert
-ALLOWED_LETTERS = list(string.ascii_uppercase[:10])
-N_BACK_STIMULI = [random.choice(ALLOWED_LETTERS) for _ in range(40)]
+VOWELS = set("AEIOU")
+ALLOWED_LETTERS = [letter for letter in string.ascii_uppercase if letter not in VOWELS]
+N_BACK_STIMULI = [random.choice(ALLOWED_LETTERS) for _ in range(60)]
 
 
 # === SUBSESSION, GROUP, PLAYER ===
@@ -102,11 +103,24 @@ class NBackBatch(Page):
 
     @staticmethod
     def vars_for_template(player):
-        n_trials = 40
+        n_trials = 60
         n_back = 2
-        letters = list('ABCDEFGHIJ')
+        num_targets = 8
+        letters = ALLOWED_LETTERS  # z.B. nur Konsonanten
 
-        stimuli = [random.choice(letters) for _ in range(n_trials)]
+        stimuli = [random.choice(letters) for _ in range(n_back)]  # Erste 2 Buchstaben zufällig
+
+        # Zufällige Positionen für Treffer (ohne Duplikate)
+        target_positions = random.sample(range(n_back, n_trials), num_targets)
+
+        for i in range(n_back, n_trials):
+            if i in target_positions:
+                # Treffer: Buchstabe von vor 2 Positionen übernehmen
+                stimuli.append(stimuli[i - n_back])
+            else:
+                # Kein Treffer: Buchstabe anders als der von vor 2 Positionen
+                choices = [l for l in letters if l != stimuli[i - n_back]]
+                stimuli.append(random.choice(choices))
 
         targets = []
         for i in range(n_trials):
@@ -116,6 +130,7 @@ class NBackBatch(Page):
                 targets.append(stimuli[i] == stimuli[i - n_back])
 
         return dict(stimuli=stimuli, targets=targets, n_back=n_back)
+
 
 
 

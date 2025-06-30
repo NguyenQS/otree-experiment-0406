@@ -1,9 +1,10 @@
 {% extends "global/Page.html" %}
 {% block content %}
 
-<h1 id="letterBox" style="font-size:80px; display:inline-block; padding:20px; border-radius:15px;">
+<h1 id="letterBox" style="font-size:80px; display:inline-block; padding:20px; border-radius:15px; height: 120px; width: 120px; line-height: 120px; text-align: center;">
     <!-- Buchstabe wird hier eingefügt -->
 </h1>
+
 <br>
 <button id="clickBtn" disabled>Klick</button>
 
@@ -15,7 +16,6 @@
     const stimuli = {{ stimuli|json }};
     const targets = {{ targets|json }};
 
-
     let currentIndex = 0;
     const letterBox = document.getElementById('letterBox');
     const clickBtn = document.getElementById('clickBtn');
@@ -25,6 +25,11 @@
         letterBox.textContent = letter;
         letterBox.style.backgroundColor = '';
         clickBtn.disabled = false;
+
+        // Verstecke den Buchstaben nach 1,5 Sekunden (Interstimulus-Intervall = 0.5s)
+        setTimeout(() => {
+            letterBox.textContent = '';
+        }, 1500);
     }
 
     function showFeedback(isCorrect) {
@@ -52,9 +57,7 @@
             clicked = true;
             const reactionTime = (performance.now() - reactionStart) / 1000;
 
-            // Ist das klicken korrekt? (Klick nur sinnvoll bei target == true)
             const correct = target && clicked;
-
             showFeedback(correct);
 
             nbackData.push({
@@ -68,22 +71,22 @@
             clickBtn.disabled = true;
         };
 
-        // Timeout für 3 Sekunden pro Buchstabe (Reaktionszeit + Pause)
+        // Nach 2 Sekunden zum nächsten Trial
         setTimeout(() => {
             if (!clicked) {
-                // Kein Klick in 3 Sekunden = false Antwort
+                // Kein Klick = eventuell korrekt
                 nbackData.push({
                     index: currentIndex,
                     letter: letter,
                     clicked: false,
-                    correct: !target,  // korrekt wenn target false und kein Klick
+                    correct: !target,
                     reaction_time: null
                 });
             }
             currentIndex++;
             clickBtn.disabled = true;
             nextTrial();
-        }, 3000);
+        }, 2000); // 1.5s Stimulus + 0.5s Pause = 2s
     }
 
     nextTrial();
