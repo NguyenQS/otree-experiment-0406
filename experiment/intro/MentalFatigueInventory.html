@@ -1,0 +1,227 @@
+{{ block title }} Questionnaire {{ endblock }}
+{{ block content }}
+
+<style>
+    .my-box {
+        border: 1px solid #ccc;
+        padding: 20px;
+        background-color: #f9f9f9;
+        font-family: sans-serif;
+    }
+
+    .slider-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        padding: 10px 0;
+        border-top: 1px solid #ccc;
+        column-gap: 40px;
+    }
+
+    .slider-grid:first-child {
+        border-top: none;
+    }
+
+    .slider-section {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .slider-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .slider-wrapper span.label {
+        width: 80px;
+        text-align: center;
+        font-size: 0.9em;
+    }
+
+    .slider-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .slider-ticks,
+    .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        position: absolute;
+        width: 94%;
+        left: 3%;
+        pointer-events: none;
+    }
+
+    .slider-ticks {
+        top: 14px;
+    }
+
+    .slider-labels {
+        top: 25px;
+        font-size: 0.8em;
+        width: 94%;
+        left: 1%;
+        color: #333;
+    }
+
+    .slider-ticks span {
+        width: 1px;
+        height: 10px;
+        background-color: black;
+        display: block;
+    }
+
+    .slider-labels span {
+        text-align: center;
+        width: 1px;
+        transform: translateX(-50%);
+    }
+
+    input[type=range] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+        height: 8px;
+        position: relative;
+        z-index: 2;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        background: #ccc;
+        height: 8px;
+        border-radius: 4px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 20px;
+        width: 20px;
+        background: #007bff;
+        border-radius: 50%;
+        margin-top: -6px;
+        cursor: pointer;
+    }
+
+    input[type=range]::-moz-range-track {
+        background: #ccc;
+        height: 8px;
+        border-radius: 4px;
+    }
+
+    input[type=range]::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        background: #007bff;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .slider-section > div:first-child {
+        text-align: center;
+    }
+</style>
+
+<div class="my-box">
+    <p> How would you agree with the following statements? Please adjust the sliders accordingly:</p>
+
+    <!-- Slider 1 -->
+    <div class="slider-grid">
+        <div>When I am doing something, I can keep my thoughts on it.</div>
+        <div class="slider-section">
+            <div><strong>Question 1</strong></div>
+            <div class="slider-wrapper">
+                <span class="label">no, that is not true</span>
+                <div class="slider-container">
+                    <div class="slider-ticks">
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="slider-labels">
+                        <span>-3</span><span>-2</span><span>-1</span><span>&nbsp;0</span><span>&nbsp;1</span><span>&nbsp;2</span><span>&nbsp;3</span>
+                    </div>
+                    <input type="range" name="mfi_1" min="-3" max="3" step="1" class="persist">
+                </div>
+                <span class="label">yes, that is true</span>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <!-- Slider 2 -->
+    <div class="slider-grid">
+        <div>I can concentrate well.</div>
+        <div class="slider-section">
+            <div><strong>Question 2</strong></div>
+            <div class="slider-wrapper">
+                <span class="label">no, that is not true</span>
+                <div class="slider-container">
+                    <div class="slider-ticks">
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="slider-labels">
+                        <span>-3</span><span>-2</span><span>-1</span><span>&nbsp;0</span><span>&nbsp;1</span><span>&nbsp;2</span><span>&nbsp;3</span>
+                    </div>
+                    <input type="range" name="mfi_2" min="-3" max="3" step="1" class="persist">
+                </div>
+                <span class="label">yes, that is true</span>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <!-- Slider 3 -->
+    <div class="slider-grid">
+        <div>It takes a lot of effort to concentrate on things.</div>
+        <div class="slider-section">
+            <div><strong>Question 3</strong></div>
+            <div class="slider-wrapper">
+                <span class="label">no, that is not true</span>
+                <div class="slider-container">
+                    <div class="slider-ticks">
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="slider-labels">
+                        <span>-3</span><span>-2</span><span>-1</span><span>&nbsp;0</span><span>&nbsp;1</span><span>&nbsp;2</span><span>&nbsp;3</span>
+                    </div>
+                    <input type="range" name="mfi_3" min="-3" max="3" step="1" class="persist">
+                </div>
+                <span class="label">yes, that is true</span>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <!-- Slider 4 -->
+    <div class="slider-grid">
+        <div>My thoughts easily wander.</div>
+        <div class="slider-section">
+            <div><strong>Question 4</strong></div>
+            <div class="slider-wrapper">
+                <span class="label">no, that is not true</span>
+                <div class="slider-container">
+                    <div class="slider-ticks">
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="slider-labels">
+                        <span>-3</span><span>-2</span><span>-1</span><span>&nbsp;0</span><span>&nbsp;1</span><span>&nbsp;2</span><span>&nbsp;3</span>
+                    </div>
+                    <input type="range" name="mfi_4" min="-3" max="3" step="1" class="persist">
+                </div>
+                <span class="label">yes, that is true</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<br/>
+
+<p>{{ next_button }}</p>
+
+{{ endblock }}

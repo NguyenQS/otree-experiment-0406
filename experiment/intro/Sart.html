@@ -1,0 +1,120 @@
+{{ block title }}
+SART
+{{ endblock }}
+{{ block content }}
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SART Reaction Test</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+
+    .circle-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+    }
+
+    .circle-button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #000;
+      border: 1px solid #333;
+      background-color: gray;
+      position: absolute;
+      top: 170px;
+      left: 170px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="circle-container">
+    <div class="circle-button" id="center-circle">3</div>
+  </div>
+
+  <script>
+    const centerCircle = document.getElementById('center-circle');
+    const colors = ['#d9534f', '#f0ad4e', '#5bc0de', '#9370DB', '#005000']; // last one is green
+
+    let currentColor = '';
+    let isGreen = false;
+    let showingFeedback = false;
+    let stimulusShownAt = null;
+    let trialIndex = 0;
+
+    function setRandomColor() {
+      if (showingFeedback) return;
+
+      const colorIndex = Math.floor(Math.random() * colors.length);
+      currentColor = colors[colorIndex];
+      isGreen = (currentColor === '#005000');
+      centerCircle.style.backgroundColor = currentColor;
+      centerCircle.innerText = '3';
+
+      // only record time if it’s green
+      stimulusShownAt = isGreen ? performance.now() : null;
+    }
+
+    function showMessage(message) {
+      showingFeedback = true;
+      centerCircle.innerText = message;
+
+      setTimeout(() => {
+        showingFeedback = false;
+        setRandomColor();
+      }, 1000);
+    }
+
+    function handleResponse() {
+      if (showingFeedback) return;
+
+      let rt = null;
+      let correct = isGreen;
+
+      if (isGreen && stimulusShownAt) {
+        rt = performance.now() - stimulusShownAt;
+      }
+
+      liveSend({
+        trial_index: trialIndex,
+        is_correct: correct,
+        reaction_time: rt ? rt.toFixed(2) : null
+      });
+
+      showMessage(correct ? 'Correct!' : 'Wrong!');
+      trialIndex++;
+    }
+
+    centerCircle.addEventListener('click', handleResponse);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        handleResponse();
+      }
+    });
+
+    setInterval(setRandomColor, 2000); // change every 2s
+    setRandomColor();
+  </script>
+</body>
+
+{{ formfields }}
+{{ next_button }}
+
+{{ endblock }}

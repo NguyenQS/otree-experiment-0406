@@ -1,0 +1,179 @@
+{{ block title }} Questionnaire {{ endblock }}
+{{ block content }}
+
+<style>
+    .my-box {
+        border: 1px solid #ccc;
+        padding: 20px;
+        background-color: #f9f9f9;
+        font-family: sans-serif;
+    }
+
+    .slider-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        padding: 10px 0;
+        border-top: 1px solid #ccc;
+        column-gap: 40px;
+    }
+
+    .slider-grid:first-child {
+        border-top: none;
+    }
+
+    .slider-section {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .slider-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .slider-wrapper span.label {
+        width: 80px;
+        text-align: center;
+        font-size: 0.9em;
+    }
+
+    .slider-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .slider-ticks,
+    .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        position: absolute;
+        width: 94%;
+        left: 3%;
+        pointer-events: none;
+    }
+
+    .slider-ticks {
+        top: 14px;
+    }
+
+    .slider-labels {
+        top: 25px;
+        font-size: 0.8em;
+        width: 94%;
+        left: 1%;
+        color: #333;
+    }
+
+    .slider-ticks span {
+        width: 1px;
+        height: 10px;
+        background-color: black;
+        display: block;
+    }
+
+    .slider-labels span {
+        text-align: center;
+        width: 1px;
+        transform: translateX(-50%);
+    }
+
+    input[type=range] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+        height: 8px;
+        position: relative;
+        z-index: 2;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        background: #ccc;
+        height: 8px;
+        border-radius: 4px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 20px;
+        width: 20px;
+        background: #007bff;
+        border-radius: 50%;
+        margin-top: -6px;
+        cursor: pointer;
+    }
+
+    input[type=range]::-moz-range-track {
+        background: #ccc;
+        height: 8px;
+        border-radius: 4px;
+    }
+
+    input[type=range]::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        background: #007bff;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .slider-section > div:first-child {
+        text-align: center;
+    }
+</style>
+
+
+    <!-- Slider 1 -->
+        <div><strong>How mentally fatigued do you feel right now?</strong></div>
+    <div class="slider-wrapper">
+        <span class="label">not at all</span>
+        <div class="slider-container">
+            <input type="range" name="mental_fatigue" min="1" max="100" step="1" class="persist">
+        </div>
+        <span class="label">very much</span>
+    </div>
+
+    <br/><br/>
+
+    <!-- Slider 2 -->
+        <div><strong>How motivated do you feel right now?</strong></div>
+    <div class="slider-wrapper">
+        <span class="label">not at all</span>
+        <div class="slider-container">
+            <input type="range" name="motivation" min="1" max="100" step="1" class="persist">
+        </div>
+        <span class="label">very much</span>
+    </div>
+
+    <br/><br/>
+
+     <!-- Slider 3 -->
+        <div><strong>How mentally demanded do you feel right now?</strong></div>
+    <div class="slider-wrapper">
+        <span class="label">not at all</span>
+        <div class="slider-container">
+            <input type="range" name="mental_workload" min="1" max="100" step="1" class="persist">
+        </div>
+        <span class="label">very much</span>
+    </div>
+
+    <br/><br/>
+
+    <!-- Slider 4 -->
+        <div><strong>How frustrated do you feel right now?</strong></div>
+    <div class="slider-wrapper">
+        <span class="label">not at all</span>
+        <div class="slider-container">
+            <input type="range" name="frustration" min="1" max="100" step="1" class="persist">
+        </div>
+        <span class="label">very much</span>
+    </div>
+
+    <br/>
+
+<p>{{ next_button }}</p>
+
+{{ endblock }}

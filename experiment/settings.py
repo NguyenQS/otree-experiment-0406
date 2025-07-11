@@ -3,7 +3,10 @@ from os import environ
 SESSION_CONFIGS = [
     dict(
         name='combined_task',              # Name frei wählbar
-        app_sequence=['intro','experiment'],       # nur deine neue App hier!
+        app_sequence=[
+            'intro',
+            # 'experiment'
+            ],       # nur deine neue App hier!
         num_demo_participants=1,
     ),
 ]
