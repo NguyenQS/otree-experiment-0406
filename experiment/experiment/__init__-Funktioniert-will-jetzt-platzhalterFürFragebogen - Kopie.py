@@ -12,12 +12,12 @@ MATB-II, N-Back und SSP kombiniert in einer App
 class C(BaseConstants):
     NAME_IN_URL = 'experiment'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 108
+    NUM_ROUNDS = 90
     GRID_SIZE = 10
     SSP_START_ROUND = 3
-    #FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4]  # die Sequenz wird insgesamt sechsmal gespielt, siehe unten
-    FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4, 3, 4, 5, 7, 6, 5, 6, 5, 4, 3, 4, 5, 7, 6, 5, 6, 5, 4]  
-    MATB_ROUNDS = [17, 18, 35, 36, 53, 54, 71, 72, 89, 90, 107, 108]
+    #FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4]  # die Sequenz wird insgesamt viermal gespielt, siehe unten
+    FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4, 3, 4, 5, 7, 6, 5, 6, 5, 4, 3, 4, 5, 7, 6, 5, 6, 5, 4]  # ggf. kürzen oder anpassen
+    MATB_ROUNDS = [14, 15, 29, 30, 44, 45, 59, 60, 74, 75, 89, 90]
     MATB_LEVEL_SEQUENCE = ['level1', 'level2', 'level3', 'level1', 'level2',
                            'level3', 'level1', 'level2', 'level3', 'level1',
                            'level2', 'level3']
@@ -107,7 +107,7 @@ class NBackBatch(Page):
     form_fields = ['nback_data_json']
 
     # Runden, in denen der N-Back gezeigt werden soll
-    NBACK_ROUNDS = [16, 34, 52, 70, 88, 106]
+    NBACK_ROUNDS = [13, 28, 43, 58, 73, 88]
 
     @staticmethod
     def is_displayed(player):
@@ -115,9 +115,9 @@ class NBackBatch(Page):
 
     @staticmethod
     def vars_for_template(player):
-        n_trials = 60
+        n_trials = 5
         n_back = 2
-        num_targets = 8
+        num_targets = 1
         letters = ALLOWED_LETTERS  # z.B. nur Konsonanten
 
         stimuli = [random.choice(letters) for _ in range(n_back)]  # Erste 2 Buchstaben zufällig
@@ -161,7 +161,7 @@ class SSP_Task(Page):
     form_model = 'player'
     form_fields = ['response']
 
-    SSP_ROUNDS = list(range(6, 15)) + list(range(24, 33)) + list(range(42, 51)) + list(range(60, 69)) + list(range(78, 87)) + list(range(96, 105))
+    SSP_ROUNDS = list(range(3, 12)) + list(range(18, 27)) + list(range(33, 42)) + list(range(48, 57)) + list(range(63, 72)) + list(range(78, 87))
 
     @staticmethod
     def is_displayed(player: Player):
@@ -225,18 +225,18 @@ class SSP_Task(Page):
 
 class SSP_Results(Page):
     SSP_BLOCKS = [
-        range(6, 15),   # Block 1
-        range(24, 33),  # Block 2
-        range(42, 51),  # Block 3
-        range(60, 69),  # Block 4
-        range(78, 87),  # Block 5
-        range(96, 105),  # Block 6
+        range(3, 12),   # Block 1
+        range(18, 27),  # Block 2
+        range(33, 42),  # Block 3
+        range(48, 57),  # Block 4
+        range(63, 72),  # Block 5
+        range(78, 87),  # Block 6
     ]
 
     @staticmethod
     def is_displayed(player: Player):
         # Am Ende jedes Blocks anzeigen (nach letzter Runde des Blocks)
-        return player.round_number in [15, 33, 51, 69, 87, 105]
+        return player.round_number in [12, 27, 42, 57, 72, 87]
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -260,52 +260,23 @@ class StartPage(Page):
 
     @staticmethod
     def is_displayed(player):
-        return player.round_number in [1, 19, 37, 55, 73, 91]
+        return player.round_number in [1, 16, 31, 46, 61, 76]
 
 
 class CrossPage(Page):
-
     form_model = 'player'  
 
     @staticmethod
     def is_displayed(player):
-        return player.round_number in [2, 20, 38, 56, 74, 92]
+        return player.round_number in [2, 17, 32, 47, 62, 77]
 
 
-class Fragebogen(Page):
-
-    form_model = 'player'
-
-    @staticmethod
-    def is_displayed(player):
-        return player.round_number in [3, 21, 39, 57, 75, 93]
-
-
-class SART(Page):
-
-    form_model = 'player'
-
-    @staticmethod
-    def is_displayed(player):
-        return player.round_number in [4, 22, 40, 58, 76, 94]
-
-
-class ReactionTime(Page):
-
-    form_model = 'player'
-
-    @staticmethod
-    def is_displayed(player):
-        return player.round_number in [5, 23, 41, 59, 77, 95]
 
 
 # === SEQUENCE ===
 page_sequence = [
     StartPage,
     CrossPage,
-    Fragebogen,
-    SART,
-    ReactionTime,
     SSP_Task,
     SSP_Results,
     NBackBatch,
