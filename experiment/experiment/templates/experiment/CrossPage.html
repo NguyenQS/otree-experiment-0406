@@ -1,0 +1,14 @@
+{% extends "global/Page.html" %}
+
+{% block content %}
+  <div style="display: flex; justify-content: center; align-items: center; height: 80vh;">
+    <span style="font-size: 160px;">X</span>
+  </div>
+
+  <script>
+    setTimeout(function() {
+      document.forms[0].submit();
+    }, 15000); // 15000 Millisekunden = 15 Sekunden
+  </script>
+
+{% endblock %}

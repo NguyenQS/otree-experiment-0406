@@ -12,14 +12,16 @@ MATB-II, N-Back und SSP kombiniert in einer App
 class C(BaseConstants):
     NAME_IN_URL = 'experiment'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 55  
-    MATB_ROUNDS = [1, 2, 14, 15, 27, 28, 40, 41, 53, 54]
-    MATB_LEVEL_SEQUENCE = ['level1', 'level2', 'level3', 'level1', 'level2',
-                           'level3', 'level1', 'level2', 'level3', 'level1']
+    NUM_ROUNDS = 90
     GRID_SIZE = 10
-    SSP_START_ROUND = 6
+    SSP_START_ROUND = 3
     #FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4]  # die Sequenz wird insgesamt viermal gespielt, siehe unten
-    FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4]  # ggf. kürzen oder anpassen
+    FIXED_SSP_DIFFICULTY = [3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4,3, 4, 5, 7, 6, 5, 6, 5, 4, 3, 4, 5, 7, 6, 5, 6, 5, 4, 3, 4, 5, 7, 6, 5, 6, 5, 4]  # ggf. kürzen oder anpassen
+    MATB_ROUNDS = [14, 15, 29, 30, 44, 45, 59, 60, 74, 75, 89, 90]
+    MATB_LEVEL_SEQUENCE = ['level1', 'level2', 'level3', 'level1', 'level2',
+                           'level3', 'level1', 'level2', 'level3', 'level1',
+                           'level2', 'level3']
+
 
 
 # Erst hier definieren, nachdem C.NUM_ROUNDS existiert
@@ -36,14 +38,21 @@ class Group(BaseGroup):
     pass
 
 class Player(BasePlayer):
+
     # MATB
     sysmon_score = models.IntegerField(min=0, max=100, blank=True)
     tracking_score = models.IntegerField(min=0, max=100, blank=True)
     comm_score = models.IntegerField(min=0, max=100, blank=True)
     resman_score = models.IntegerField(min=0, max=100, blank=True)
 
+
+
     # N-Back
-    nback_data_json = models.LongStringField(blank=True)
+    nback_data_json = models.LongStringField()
+
+    total_correct = models.IntegerField()
+    mean_rt = models.FloatField()
+
 
 
     # SSP
@@ -55,6 +64,8 @@ class Player(BasePlayer):
     total_time_used = models.IntegerField(initial=0)
     timeout_seconds = models.IntegerField(initial=0)
 
+    first_error_index = models.IntegerField(blank=True, null=True)  # Index des ersten Fehlers
+
     def generate_sequence(self):
         seq = random.sample(range(C.GRID_SIZE), self.difficulty)
         self.sequence = ','.join(map(str, seq))
@@ -65,9 +76,11 @@ class Player(BasePlayer):
 
     @staticmethod
     def target_letter(player: 'Player'):
-        if player.round_number <= 2:
+        if player.round_number <= 12:
             return None
         return N_BACK_STIMULI[player.round_number - 3]
+
+
 
 # === PAGES ===
 
@@ -87,7 +100,6 @@ class MATB_Task(Page):
         return {'matb_level': level}
 
 
-
 # --- N-BACK ---
 
 class NBackBatch(Page):
@@ -95,7 +107,7 @@ class NBackBatch(Page):
     form_fields = ['nback_data_json']
 
     # Runden, in denen der N-Back gezeigt werden soll
-    NBACK_ROUNDS = [3, 16, 29, 42, 55]
+    NBACK_ROUNDS = [13, 28, 43, 58, 73, 88]
 
     @staticmethod
     def is_displayed(player):
@@ -103,9 +115,9 @@ class NBackBatch(Page):
 
     @staticmethod
     def vars_for_template(player):
-        n_trials = 60
+        n_trials = 5
         n_back = 2
-        num_targets = 8
+        num_targets = 1
         letters = ALLOWED_LETTERS  # z.B. nur Konsonanten
 
         stimuli = [random.choice(letters) for _ in range(n_back)]  # Erste 2 Buchstaben zufällig
@@ -132,6 +144,16 @@ class NBackBatch(Page):
         return dict(stimuli=stimuli, targets=targets, n_back=n_back)
 
 
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        import json
+        trials = json.loads(player.nback_data_json)
+        correct = [t for t in trials if t['correct']]
+        reaction_times = [t['reaction_time'] for t in trials if t['reaction_time'] is not None]
+
+        player.total_correct = len(correct)
+        player.mean_rt = sum(reaction_times) / len(reaction_times) if reaction_times else None
+
 
 
 # --- SSP ---
@@ -139,7 +161,7 @@ class SSP_Task(Page):
     form_model = 'player'
     form_fields = ['response']
 
-    SSP_ROUNDS = list(range(4, 13)) + list(range(17, 26)) + list(range(30, 39)) + list(range(43, 52))
+    SSP_ROUNDS = list(range(3, 12)) + list(range(18, 27)) + list(range(33, 42)) + list(range(48, 57)) + list(range(63, 72)) + list(range(78, 87))
 
     @staticmethod
     def is_displayed(player: Player):
@@ -166,45 +188,97 @@ class SSP_Task(Page):
             'difficulty': player.difficulty,
         }
 
+
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
-        correct_seq = player.sequence.split(',')
+        correct_seq = player.sequence.split(',')  # z. B. ['3','1','4']
         response_seq = player.response.split(',') if player.response else []
-        player.correct = correct_seq == response_seq
+
+        # Speichere die Sequenzen für die CSV
+        player.sequence = ','.join(correct_seq)
+        player.response = ','.join(response_seq)
+
+        # Überprüfen, ob korrekt
+        is_correct = correct_seq == response_seq
+        player.correct = is_correct
+
+        # Fehlerindex berechnen
+        first_error = -1
+        for i, (c, r) in enumerate(zip(correct_seq, response_seq)):
+            if c != r:
+                first_error = i
+                break
+        if len(response_seq) < len(correct_seq):
+            first_error = len(response_seq)
+
+        player.first_error_index = -1 if is_correct else first_error
+
+        # Max-Span aktualisieren
         if player.correct:
             player.max_span = max(player.max_span, player.difficulty)
+
+        # Gesamtzeit aufsummieren
         player.total_time_used = sum(p.timeout_seconds for p in player.in_all_rounds())
+
+
 
 
 class SSP_Results(Page):
     SSP_BLOCKS = [
-        range(4, 13),   # Block 1
-        range(17, 26),  # Block 2
-        range(30, 39),  # Block 3
-        range(43, 52),  # Block 4
+        range(3, 12),   # Block 1
+        range(18, 27),  # Block 2
+        range(33, 42),  # Block 3
+        range(48, 57),  # Block 4
+        range(63, 72),  # Block 5
+        range(78, 87),  # Block 6
     ]
 
     @staticmethod
     def is_displayed(player: Player):
         # Am Ende jedes Blocks anzeigen (nach letzter Runde des Blocks)
-        return player.round_number in [13, 26, 39, 52]
+        return player.round_number in [12, 27, 42, 57, 72, 87]
 
     @staticmethod
     def vars_for_template(player: Player):
         current_round = player.round_number
         for block in SSP_Results.SSP_BLOCKS:
             if current_round == block.stop:
-                block_players = [p for p in player.in_rounds(block.start, block.stop - 1)]
-                max_span = max(p.max_span for p in block_players)
+                block_players = player.in_rounds(block.start, block.stop - 1)
+                # Nur richtige Antworten zählen
+                correct_trials = [p for p in block_players if p.correct]
+                if correct_trials:
+                    max_span = max(p.difficulty for p in correct_trials)
+                else:
+                    max_span = 0
                 return {'max_span': max_span}
         return {'max_span': 0}  # Fallback
 
 
 
+class StartPage(Page):
+    form_model = 'player'  
+
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number in [1, 16, 31, 46, 61, 76]
+
+
+class CrossPage(Page):
+    form_model = 'player'  
+
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number in [2, 17, 32, 47, 62, 77]
+
+
+
+
 # === SEQUENCE ===
 page_sequence = [
-    MATB_Task,
-    NBackBatch,
+    StartPage,
+    CrossPage,
     SSP_Task,
     SSP_Results,
+    NBackBatch,
+    MATB_Task
 ]
