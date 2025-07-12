@@ -1,10 +1,16 @@
 from otree.api import *
 import json
+import random
 
 class C(BaseConstants):
     NAME_IN_URL = 'intro'
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 1
+
+    # Stroop
+    COGNITIVE_TEST_DURATION = 30
+    STROOP_WORDS = ['red', 'blue', 'green', 'yellow']
+    STROOP_COLORS = ['#ff0000', '#0000ff', '#00ff00', '#ffff00']
 
 class Subsession(BaseSubsession):
     pass
@@ -27,6 +33,22 @@ class Player(BasePlayer):
 
     # var for reaction time task and for sustained attention to respond task
     timings_json = models.LongStringField(blank=True, null=True)
+
+    # var for stroop
+    cognitive_test_score = models.IntegerField(
+        initial=0,
+        doc="Score on cognitive load test (correct answers)"
+    )
+
+    cognitive_test_reaction_time = models.FloatField(
+        initial=0.0,
+        doc="Average reaction time in cognitive test (milliseconds)"
+    )
+
+    cognitive_test_errors = models.IntegerField(
+        initial=0,
+        doc="Number of errors in cognitive test"
+    )
 
 
 class VASPage(Page):
@@ -51,6 +73,7 @@ class MentalFatigueInventory(Page): # TODO: könnnen wir das auch einmal mitten 
     form_fields = ['mfi_1', 'mfi_2', 'mfi_3', 'mfi_4']
 
 
+# Code provided by Dary
 class ReactionTime(Page):
     @staticmethod
     def live_method(player: Player, data):
@@ -72,6 +95,8 @@ class ReactionTime(Page):
         existing[idx]['reaction_time'] = rt
         player.timings_json = json.dumps(existing)
 
+
+# Code provided by Dary
 class Sart(Page):
     @staticmethod
     def live_method(player: Player, data):
@@ -97,6 +122,80 @@ class Sart(Page):
 
         player.timings_json = json.dumps(existing)
 
+
+
+# Code provided by Till (original oTree 3)
+class StroopInstruction(Page):
+    timeout_seconds = 20
+
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1
+
+    @staticmethod
+    def vars_for_template(player):
+        return {
+            'session_number': player.round_number
+        }
+
+
+# Code provided by Till
+class Stroop(Page):
+    form_model = 'player'
+    form_fields = ['cognitive_test_score', 'cognitive_test_reaction_time', 'cognitive_test_errors']
+    timeout_seconds = 30
+
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1
+
+    @staticmethod
+    def vars_for_template(player):
+        # Generate random Stroop test items for baseline
+        test_items = []
+        color_mapping = {
+            '#ff0000': 'red',
+            '#0000ff': 'blue',
+            '#00ff00': 'green',
+            '#ffff00': 'yellow'
+        }
+
+        for i in range(20):  # 20 items
+            word = random.choice(C.STROOP_WORDS)
+            color_hex = random.choice(C.STROOP_COLORS)
+            color_name = color_mapping[color_hex]
+
+            test_items.append({
+                'word': word,
+                'color': color_hex,
+                'correct_answer': color_name
+            })
+
+        return {
+            'test_items': test_items,
+            'test_duration': 30,
+            'session_number': player.round_number
+        }
+
+
+# Code provided by Till
+class StroopResults(Page):
+    timeout_seconds = 20
+
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1
+
+    @staticmethod
+    def vars_for_template(player):
+        return {
+            'session_number': player.round_number,
+            'score': player.cognitive_test_score or 0,
+            'reaction_time': player.cognitive_test_reaction_time or 0,
+            'errors': player.cognitive_test_errors or 0,
+            'total_items': 20
+        }
+
 class PageOne(Page):
     pass
 
@@ -108,6 +207,9 @@ page_sequence = [
     # PageTwo,
     MentalFatigueInventory,
     VASPage,
+    StroopInstruction,
+    Stroop,
+    StroopResults,
     Sart,
     ReactionTime,
 ]
