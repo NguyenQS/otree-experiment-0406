@@ -74,38 +74,17 @@ class MentalFatigueInventory(Page): # TODO: könnnen wir das auch einmal mitten 
 
 
 # Code provided by Dary
-class ReactionTime(Page):
+class ReactionTimeMT(Page):
+    timeout_seconds = 60 * 2
+
     @staticmethod
     def live_method(player: Player, data):
+        rt = data.get('response_time')
+        reactionT = data.get('leave_time')
         idx = str(data.get('trial_index'))
-        rt = data.get('reaction_time')
-
-        if idx is None or rt is None:
-            return
-
-        raw = player.field_maybe_none('timings_json')
-        try:
-            existing = json.loads(raw) if raw else {}
-        except json.JSONDecodeError:
-            existing = {}
-
-        if idx not in existing:
-            existing[idx] = {}
-
-        existing[idx]['reaction_time'] = rt
-        player.timings_json = json.dumps(existing)
-
-
-# Code provided by Dary
-class Sart(Page):
-    @staticmethod
-    def live_method(player: Player, data):
-        idx = str(data.get('trial_index'))
-        rt = data.get('reaction_time')
-        correct = data.get('is_correct')
 
         if idx is None:
-            return
+            return  # must have trial index
 
         raw = player.field_maybe_none('timings_json')
         try:
@@ -113,14 +92,43 @@ class Sart(Page):
         except json.JSONDecodeError:
             existing = {}
 
+        # Initialize if not present
         if idx not in existing:
             existing[idx] = {}
 
         if rt is not None:
-            existing[idx]['reaction_time'] = rt
-        existing[idx]['is_correct'] = correct
+            existing[idx]["response_time"] = rt
+        if reactionT is not None:
+            existing[idx]["reaction_time"] = reactionT
 
         player.timings_json = json.dumps(existing)
+
+
+# Sustained Attenion to Response Task - not functional
+# class Sart(Page):
+#     @staticmethod
+#     def live_method(player: Player, data):
+#         idx = str(data.get('trial_index'))
+#         rt = data.get('reaction_time')
+#         correct = data.get('is_correct')
+#
+#         if idx is None:
+#             return
+#
+#         raw = player.field_maybe_none('timings_json')
+#         try:
+#             existing = json.loads(raw) if raw else {}
+#         except json.JSONDecodeError:
+#             existing = {}
+#
+#         if idx not in existing:
+#             existing[idx] = {}
+#
+#         if rt is not None:
+#             existing[idx]['reaction_time'] = rt
+#         existing[idx]['is_correct'] = correct
+#
+#         player.timings_json = json.dumps(existing)
 
 
 
@@ -210,6 +218,5 @@ page_sequence = [
     StroopInstruction,
     Stroop,
     StroopResults,
-    Sart,
-    ReactionTime,
+    ReactionTimeMT,
 ]

@@ -1,0 +1,127 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+.circle-container {
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+
+.circle-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+    border: 1px solid #333;
+    background-color: gray;
+    cursor: pointer;
+    position: absolute;
+}
+
+#center-circle {
+    top: 170px;
+    left: 170px;
+    width: 60px;
+    height: 60px;
+    background-color: gray;
+    border: 1px solid #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 24px;
+    color: black;
+    text-align: center;
+    cursor: pointer;
+}
+
+#message {
+    position: absolute;
+    top: 250px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+    text-align: center;
+}
+
+body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+
+    .circle-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+    }
+
+    .circle-button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #000;
+      border: 1px solid #333;
+      background-color: gray;
+      cursor: pointer;
+      position: absolute;
+    }
+
+    #center-circle {
+      top: 120px;
+      left: 170px;
+      width: 60px;
+      height: 60px;
+      background-color: gray;
+      border: 1px solid #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 24px;
+      color: black;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    #hold-button {
+      top: 310px;
+      left: 170px;
+      width: 60px;
+      height: 60px;
+      background-color: white;
+      border: 1px solid #333;
+      border-radius: 50%;
+      cursor: pointer;
+      position: absolute;
+    }
+
+    #message {
+      position: absolute;
+      top: 250px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 16px;
+      font-weight: bold;
+      color: black;
+      text-align: center;
+    }
