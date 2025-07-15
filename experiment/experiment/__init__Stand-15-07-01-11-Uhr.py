@@ -160,9 +160,9 @@ class NBackBatch(Page):
 
     @staticmethod
     def vars_for_template(player):
-        n_trials = 60
+        n_trials = 5
         n_back = 2
-        num_targets = 8
+        num_targets = 1
         letters = ALLOWED_LETTERS  # z.B. nur Konsonanten
 
         stimuli = [random.choice(letters) for _ in range(n_back)]  # Erste 2 Buchstaben zufällig
@@ -413,43 +413,6 @@ class ReactionTime(Page):
     def is_displayed(player):
         return player.round_number in [5, 23, 41, 59, 77, 95]
 
-class ReactionTimeMT(Page):
-
-    form_model = 'player'
-
-    timeout_seconds = 60 * 2
-
-    @staticmethod
-    def live_method(player: Player, data):
-        rt = data.get('response_time')
-        reactionT = data.get('leave_time')
-        idx = str(data.get('trial_index'))
-
-        if idx is None:
-            return  {player.id_in_group: {'error': 'Missing trial_index'}} # must have trial index
-
-        raw = player.field_maybe_none('timings_json')
-        try:
-            existing = json.loads(raw) if raw else {}
-        except json.JSONDecodeError:
-            existing = {}
-
-        # Initialize if not present
-        if idx not in existing:
-            existing[idx] = {}
-
-        if rt is not None:
-            existing[idx]["response_time"] = rt
-        if reactionT is not None:
-            existing[idx]["reaction_time"] = reactionT
-
-        player.timings_json = json.dumps(existing)
-
-    @staticmethod
-    def is_displayed(player):
-        return player.round_number in [5, 23, 41, 59, 77, 95]
-
-
 
 # Code provided by Dary
 class Sart(Page):
@@ -616,7 +579,8 @@ page_sequence = [
     StroopInstruction,
     Stroop,
     StroopResults,
-    ReactionTimeMT,
+    Sart,
+    ReactionTime,
     SSP_Task,
     SSP_Results,
     NBackBatch,

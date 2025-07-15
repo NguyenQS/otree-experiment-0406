@@ -4,8 +4,7 @@ SESSION_CONFIGS = [
     dict(
         name='combined_task',              # Name frei wählbar
         app_sequence=[
-            'intro',
-            # 'experiment'
+            'experiment'
             ],       # nur deine neue App hier!
         num_demo_participants=1,
     ),

@@ -82,13 +82,12 @@ using "devtools" or "view source".
 
   // Zeige den Level-Namen auf der Seite an
   const display = document.getElementById("levelDisplay");
-  if (display) {
-    display.innerText = "Level: " + level;
-  }
+  
 
   myUnityInstance.SendMessage('WebBridgeObject', 'SetLevel', level);
   console.log("Sent level " + level + " to unity instance.");
   }
+  
 
 
 

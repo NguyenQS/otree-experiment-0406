@@ -1,0 +1,113 @@
+{{ block title }}
+Reaction Time movement time
+{{ endblock }}
+{{ block content }}
+
+{% load otree static %}
+<link rel="stylesheet" href="{% static 'global/style1.css' %}"/>
+
+<body>
+  <p style="font-weight: bold; margin-bottom: 20px;">
+    Hold down the white circle, wait until the gray circle turns green, and then click on the green circle as quickly as possible.  
+  </p>
+
+  <div class="circle-container">
+    <div class="circle-button" id="center-circle">3</div>
+    <div class="circle-button" id="hold-button"></div>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const centerCircle = document.getElementById('center-circle');
+    const holdButton = document.getElementById('hold-button');
+    const message = document.getElementById('message');
+
+    let isGreen = false;
+    let waiting = false;
+    let holding = false;
+    let timeoutId = null;
+    let canClick = false;
+    let trialIndex = 0;
+    let rt = 0;
+    let rtStartTime = 0;
+    let lastClick = performance.now();
+
+    // Position the hold button below the center circle
+    holdButton.style.top = '270px';
+    holdButton.style.left = '170px';
+    holdButton.style.backgroundColor = 'white';
+    holdButton.style.border = '1px solid #333';
+    holdButton.style.cursor = 'pointer';
+
+    function showMessage(text) {
+      message.innerText = text;
+      setTimeout(() => {
+        message.innerText = '';
+      }, 1000);
+    }
+
+    function startTrial() {
+      isGreen = false;
+      canClick = false;
+      centerCircle.style.backgroundColor = 'gray';
+      waiting = true;
+
+      const delay = Math.random() * 6000 + 1000; // 1000–7000 ms
+      timeoutId = setTimeout(() => {
+        if (holding) {
+          rtStartTime = performance.now();
+          centerCircle.style.backgroundColor = '#005000'; // green
+          isGreen = true;
+          waiting = false;
+          canClick = true;
+        }
+      }, delay);
+    }
+
+    function resetTrial() {
+      clearTimeout(timeoutId);
+      isGreen = false;
+      waiting = false;
+      holding = false;
+      canClick = false;
+      centerCircle.style.backgroundColor = 'gray';
+    }
+
+    holdButton.addEventListener('mousedown', () => {
+      if (holding) return;
+      holding = true;
+      holdButton.style.backgroundColor = 'gray';
+      startTrial();
+    });
+
+    holdButton.addEventListener('mouseup', () => {
+      lastClick = performance.now();
+      const rtLeave = performance.now() - rtStartTime
+      liveSend({ leave_time: rtLeave, trial_index: trialIndex });
+      if (!isGreen) {
+        showMessage('Too early!');
+        resetTrial();
+      }
+      holdButton.style.backgroundColor = 'white';
+    });
+
+    centerCircle.addEventListener('click', () => {
+      rt = performance.now() - lastClick;
+      if (isGreen && canClick) {
+        liveSend({ response_time: rt, trial_index: trialIndex });
+        showMessage('Correct!');
+        resetTrial();
+      } else if (!isGreen && waiting) {
+        liveSend({ response_time: rt, trial_index: trialIndex });
+        showMessage('Too soon!');
+        resetTrial();
+      }
+      trialIndex++;
+    });
+
+  </script>
+</body>
+
+{{ formfields }}
+
+{{ endblock }}

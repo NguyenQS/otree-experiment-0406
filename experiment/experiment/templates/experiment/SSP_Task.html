@@ -37,6 +37,8 @@
   const sequence = "{{ sequence }}";
   const grid = document.getElementById('grid');
   const squares = grid.getElementsByClassName('square');
+  let inputAllowed = false;  // <<< Neu: Eingabe erst nach Sequenz erlaubt
+  let clicked = [];
 
   // Positionieren
   [...squares].forEach((el, idx) => {
@@ -46,6 +48,7 @@
 
   // Zeige Sequenz
   async function showSequence() {
+    inputAllowed = false;
     for (let id of sequence.split(',')) {
       let sq = document.getElementById('sq' + id);
       sq.style.backgroundColor = 'yellow';
@@ -53,12 +56,13 @@
       sq.style.backgroundColor = 'lightgray';
       await new Promise(r => setTimeout(r, 300));
     }
+    inputAllowed = true;  // <<< Jetzt darf man klicken
   }
 
-  // Eingabe erfassen
-  let clicked = [];
+  // Klicks erfassen
   [...squares].forEach(sq => {
     sq.addEventListener('click', () => {
+      if (!inputAllowed) return;  // <<< Klicks während der Sequenz ignorieren
       const id = sq.dataset.id;
       if (!clicked.includes(id)) {
         clicked.push(id);

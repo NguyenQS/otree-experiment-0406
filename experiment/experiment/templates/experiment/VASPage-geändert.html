@@ -1,0 +1,80 @@
+{{ block title }} Questionnaire {{ endblock }}
+{{ block content }}
+
+<style>
+    /* Dein bestehendes Styling bleibt unverändert */
+    ...
+</style>
+
+<!-- Slider 1 -->
+<div><strong>How mentally fatigued do you feel right now?</strong></div>
+<div class="slider-wrapper">
+    <span class="label">not at all</span>
+    <div class="slider-container">
+        <input type="range" min="1" max="100" step="1" id="slider_mental_fatigue">
+    </div>
+    <span class="label">very much</span>
+</div>
+
+<br/><br/>
+
+<!-- Slider 2 -->
+<div><strong>How motivated do you feel right now?</strong></div>
+<div class="slider-wrapper">
+    <span class="label">not at all</span>
+    <div class="slider-container">
+        <input type="range" min="1" max="100" step="1" id="slider_motivation">
+    </div>
+    <span class="label">very much</span>
+</div>
+
+<br/><br/>
+
+<!-- Slider 3 -->
+<div><strong>How mentally demanded do you feel right now?</strong></div>
+<div class="slider-wrapper">
+    <span class="label">not at all</span>
+    <div class="slider-container">
+        <input type="range" min="1" max="100" step="1" id="slider_mental_workload">
+    </div>
+    <span class="label">very much</span>
+</div>
+
+<br/><br/>
+
+<!-- Slider 4 -->
+<div><strong>How frustrated do you feel right now?</strong></div>
+<div class="slider-wrapper">
+    <span class="label">not at all</span>
+    <div class="slider-container">
+        <input type="range" min="1" max="100" step="1" id="slider_frustration">
+    </div>
+    <span class="label">very much</span>
+</div>
+
+<!-- Hidden inputs for oTree form submission -->
+<input type="hidden" name="mental_fatigue" id="hidden_mental_fatigue">
+<input type="hidden" name="motivation" id="hidden_motivation">
+<input type="hidden" name="mental_workload" id="hidden_mental_workload">
+<input type="hidden" name="frustration" id="hidden_frustration">
+
+<p>{{ next_button }}</p>
+
+<script>
+    function connectSlider(sliderId, hiddenId) {
+        const slider = document.getElementById(sliderId);
+        const hidden = document.getElementById(hiddenId);
+        hidden.value = slider.value; // initial
+        slider.addEventListener('input', () => {
+            hidden.value = slider.value;
+        });
+    }
+
+    connectSlider('slider_mental_fatigue', 'hidden_mental_fatigue');
+    connectSlider('slider_motivation', 'hidden_motivation');
+    connectSlider('slider_mental_workload', 'hidden_mental_workload');
+    connectSlider('slider_frustration', 'hidden_frustration');
+</script>
+
+{{ endblock }}
+

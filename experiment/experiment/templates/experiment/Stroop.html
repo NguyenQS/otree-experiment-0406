@@ -1,0 +1,249 @@
+{% block title %}Cognitive Test - Session {{ session_number }}{% endblock %}
+
+{% block content %}
+    <style>
+        body {
+            background-color: #FFFFFF;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            color: #333;
+        }
+
+        .otree-timer,
+        .alert-warning {
+            background-color: transparent !important;
+            border: none !important;
+            color: #666 !important;
+            font-size: 14px !important;
+            text-align: center !important;
+        }
+
+        .test-header {
+            padding: 20px;
+            margin-bottom: 10px;
+        }
+
+        .test-header h3 {
+            color: #333;
+        }
+
+        .test-header p {
+            margin: 0;
+            color: #666;
+        }
+
+
+        #testItem {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 40px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .color-btn {
+            padding: 15px 25px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 80px;
+            background-color: white;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.05);
+            border-color: #000;
+        }
+
+        .color-btn:active {
+            transform: scale(0.95);
+        }
+
+        .red-btn {
+            background-color: #ff0000;
+            color: white;
+            border-color: #ff0000;
+        }
+
+        .blue-btn {
+            background-color: #0000ff;
+            color: white;
+            border-color: #0000ff;
+        }
+
+        .green-btn {
+            background-color: #00ff00;
+            color: black;
+            border-color: #00ff00;
+        }
+
+        .yellow-btn {
+            background-color: #ffff00;
+            color: black;
+            border-color: #ffff00;
+        }
+
+        .skip {
+            background: #dc3545;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        .skip-button {
+            background: #dc3545;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+    </style>
+
+    <div class="test-header">
+        <h3>Stroop Test Active</h3>
+        <p>Item: <span id="currentItem">1</span> / <span id="totalItems">20</span></p>
+    </div>
+
+    <!-- Skip Button for debugging -->
+    <div class="skip">
+        <button onclick="skipSession()"
+                class="skip-button">
+            Skip Session
+        </button>
+    </div>
+
+
+    <div id="testItem"></div>
+
+    <div class="color-buttons">
+        <button type="button" class="color-btn red-btn" onclick="selectColor('red')">RED</button>
+        <button type="button" class="color-btn blue-btn" onclick="selectColor('blue')">BLUE</button>
+        <button type="button" class="color-btn green-btn" onclick="selectColor('green')">GREEN</button>
+        <button type="button" class="color-btn yellow-btn" onclick="selectColor('yellow')">YELLOW</button>
+    </div>
+
+
+    <input type="hidden" name="cognitive_test_score" id="cognitive_test_score" value="0">
+    <input type="hidden" name="cognitive_test_reaction_time" id="cognitive_test_reaction_time" value="0">
+    <input type="hidden" name="cognitive_test_errors" id="cognitive_test_errors" value="0">
+
+    <script>
+
+        const testItems = {{ test_items|safe }};
+
+        let currentItemIndex = 0;
+        let score = 0;
+        let errors = 0;
+        let reactionTimes = [];
+        let testStartTime = 0;
+        let itemStartTime = 0;
+        let testActive = false;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            startTest();
+        });
+
+        function startTest() {
+            testStartTime = Date.now();
+            testActive = true;
+            document.getElementById('totalItems').textContent = testItems.length;
+            showNextItem();
+        }
+
+        function showNextItem() {
+            if (currentItemIndex >= testItems.length || !testActive) {
+                saveResultsAndSubmit();
+                return;
+            }
+
+            const item = testItems[currentItemIndex];
+            const testElement = document.getElementById('testItem');
+
+            // Display word in the specified color
+            testElement.textContent = item.word.toUpperCase();
+            testElement.style.color = item.color;
+
+            document.getElementById('currentItem').textContent = currentItemIndex + 1;
+            itemStartTime = Date.now();
+        }
+
+        // Skip for debugging
+        function skipSession() {
+            if (confirm('Skip this session?')) {
+                document.querySelector('form').submit();
+            }
+        }
+
+        function selectColor(selectedColor) {
+            if (!testActive) return;
+
+            const reactionTime = Date.now() - itemStartTime;
+            reactionTimes.push(reactionTime);
+
+            const currentItem = testItems[currentItemIndex];
+            const correctColor = currentItem.correct_answer;
+
+            // Check if the clicked color matches the color of the displayed word
+            if (selectedColor === correctColor) {
+                score++;
+            } else {
+                errors++;
+            }
+
+            currentItemIndex++;
+            showNextItem();
+        }
+
+        function saveResultsAndSubmit() {
+            testActive = false;
+
+            const avgReactionTime = reactionTimes.length > 0
+                ? reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length
+                : 0;
+
+            document.getElementById('cognitive_test_score').value = score;
+            document.getElementById('cognitive_test_reaction_time').value = Math.round(avgReactionTime);
+            document.getElementById('cognitive_test_errors').value = errors;
+
+            document.querySelector('form').submit();
+        }
+
+        window.addEventListener('beforeunload', function () {
+            if (testActive) {
+                const avgReactionTime = reactionTimes.length > 0
+                    ? reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length
+                    : 0;
+
+                document.getElementById('cognitive_test_score').value = score;
+                document.getElementById('cognitive_test_reaction_time').value = Math.round(avgReactionTime);
+                document.getElementById('cognitive_test_errors').value = errors;
+            }
+        });
+    </script>
+
+{% endblock %}

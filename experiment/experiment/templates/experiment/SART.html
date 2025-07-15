@@ -1,7 +1,124 @@
-{% extends "global/Page.html" %}
+{{ block title }}
+SART Reaction Test
+{{ endblock }}
 
-{% block content %}
-    <h2>SART (Platzhalter)</h2>
-    <p>Dies ist eine Platzhalter-Seite für den SART Task.</p>
-    <button>Weiter</button>
-{% endblock %}
+{{ block content }}
+
+<style>
+  #instruction {
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: black;
+  }
+
+  .circle-container {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+  }
+
+  .circle-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+    border: 1px solid #333;
+    background-color: gray;
+    position: absolute;
+    top: 170px;
+    left: 170px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    user-select: none;
+  }
+</style>
+
+<p id="instruction">
+  Press as quickly as possible when the button is green.
+</p>
+
+<div class="circle-container">
+  <div class="circle-button" id="center-circle">3</div>
+</div>
+
+{{ formfields }}
+
+<script>
+  const centerCircle = document.getElementById('center-circle');
+  const colors = ['#d9534f', '#f0ad4e', '#5bc0de', '#9370DB', '#005000'];
+
+  let isGreen = false;
+  let showingFeedback = false;
+  let stimulusShownAt = null;
+  let trialIndex = 0;
+
+  function setRandomColor() {
+    if (showingFeedback) return;
+
+    const colorIndex = Math.floor(Math.random() * colors.length);
+    const currentColor = colors[colorIndex];
+    isGreen = (currentColor === '#005000');
+    centerCircle.style.backgroundColor = currentColor;
+    centerCircle.innerText = '3';
+
+    stimulusShownAt = isGreen ? performance.now() : null;
+  }
+
+  function showMessage(message) {
+    showingFeedback = true;
+    centerCircle.innerText = message;
+
+    setTimeout(() => {
+      showingFeedback = false;
+      setRandomColor();
+    }, 1000);
+  }
+
+  function handleResponse() {
+    if (showingFeedback) return;
+
+    let rt = null;
+    let correct = isGreen;
+
+    if (isGreen && stimulusShownAt) {
+      rt = performance.now() - stimulusShownAt;
+    }
+
+    liveSend({
+      trial_index: trialIndex,
+      is_correct: correct,
+      reaction_time: rt ? rt.toFixed(2) : null
+    });
+
+    showMessage(correct ? 'Correct!' : 'Wrong!');
+    trialIndex++;
+  }
+
+  centerCircle.addEventListener('click', handleResponse);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      handleResponse();
+    }
+  });
+
+  const colorInterval = setInterval(setRandomColor, 2000);
+  setRandomColor();
+
+  setTimeout(() => {
+    clearInterval(colorInterval);
+    // Hole alle Reaktionsdaten aus dem Server (hier lokal gepuffert)
+    fetch('/get_live_data/' + js_vars.participant_code)  // nur wenn du externen Endpunkt verwendest
+      .then(() => {
+    document.querySelector('form').submit();
+  }, 60000);
+
+</script>
+
+{{ endblock }}

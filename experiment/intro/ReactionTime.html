@@ -1,81 +1,23 @@
 {{ block title }}
 Reaction Time
 {{ endblock }}
+
 {{ block content }}
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reaction Time Test</title>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #f0f0f0;
-    }
+<p id="instruction" style="text-align:center; font-size: 20px; margin-bottom: 20px;">
+  Press as quickly as possible when the button is no longer gray.
+</p>
 
-    .circle-container {
-      position: relative;
-      width: 400px;
-      height: 400px;
-    }
-
-    .circle-button {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 24px;
-      font-weight: bold;
-      color: #000;
-      border: 1px solid #333;
-      background-color: gray;
-      cursor: pointer;
-      position: absolute;
-      transition: background-color 0.3s;
-    }
-
-    #center-circle {
-      top: 170px;
-      left: 170px;
-      width: 60px;
-      height: 60px;
-      background-color: gray;
-      border: 1px solid #333;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: bold;
-      font-size: 24px;
-      color: black;
-      text-align: center;
-      cursor: pointer;
-    }
-
-    #message {
-      position: absolute;
-      top: 250px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 16px;
-      font-weight: bold;
-      color: black;
-      text-align: center;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="circle-container">
-    <div class="circle-button" id="center-circle">3</div>
-    <div id="message"></div>
+<div class="circle-container" style="position: relative; width: 400px; height: 400px; margin: 0 auto;">
+  <div class="circle-button" id="center-circle" style="width:60px; height:60px; border-radius:50%; background-color:gray; border:1px solid #333; display:flex; justify-content:center; align-items:center; font-size:24px; font-weight:bold; color:black; position:absolute; top:170px; left:170px; cursor:pointer; transition: background-color 0.3s;">
+    3
   </div>
+  <div id="message" style="position:absolute; top:250px; left:50%; transform: translateX(-50%); font-size:16px; font-weight:bold; color:black; text-align:center;"></div>
+</div>
 
-  <script>
+{{ formfields }}
+
+<script>
   const centerCircle = document.getElementById('center-circle');
   const message = document.getElementById('message');
 
@@ -93,13 +35,11 @@ Reaction Time
   }
 
   function startTrial() {
-    // Reset state
     isGreen = false;
     waiting = true;
     stimulusShownAt = null;
     centerCircle.style.backgroundColor = 'gray';
 
-    // Delay before showing green
     const delay = Math.random() * 6000 + 1000;
     timeoutId = setTimeout(() => {
       centerCircle.style.backgroundColor = '#005000';
@@ -112,11 +52,11 @@ Reaction Time
   function handleClick() {
     if (waiting && !isGreen) {
       clearTimeout(timeoutId);
-      showMessage('Too soon!');
-      startTrial(); // reset trial
+      showMessage('Zu früh!');
+      startTrial();
     } else if (isGreen) {
       const rt = performance.now() - stimulusShownAt;
-      showMessage('Correct!');
+      showMessage('Richtig!');
 
       liveSend({
         trial_index: trialIndex,
@@ -124,11 +64,9 @@ Reaction Time
       });
 
       trialIndex++;
-      // Reset immediately so green doesn't stay
       isGreen = false;
       centerCircle.style.backgroundColor = 'gray';
 
-      // Delay before next trial starts
       setTimeout(startTrial, 1000);
     }
   }
@@ -141,12 +79,18 @@ Reaction Time
     }
   });
 
-  // Start first trial
   startTrial();
-</script>
-</body>
 
-{{ formfields }}
-{{ next_button }}
+  setTimeout(() => {
+    const submitBtn = document.querySelector('button[type=submit]');
+    if (submitBtn) {
+      submitBtn.click();
+    } else {
+      const form = document.querySelector('form');
+      if (form) form.submit();
+    }
+  }, 60000);
+</script>
 
 {{ endblock }}
+
