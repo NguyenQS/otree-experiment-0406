@@ -1,3 +1,4 @@
+import json
 import random
 import string
 
@@ -424,6 +425,7 @@ class ReactionTimeMT(Page):
         rt = data.get('response_time')
         reactionT = data.get('leave_time')
         idx = str(data.get('trial_index'))
+
 
         if idx is None:
             return  {player.id_in_group: {'error': 'Missing trial_index'}} # must have trial index

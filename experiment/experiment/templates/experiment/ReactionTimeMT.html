@@ -1,10 +1,16 @@
 {{ block title }}
 Reaction Time movement time
 {{ endblock }}
+
 {{ block content }}
 
 {% load otree static %}
 <link rel="stylesheet" href="{% static 'global/style1.css' %}"/>
+
+<!-- oTree-Formular -->
+<form id="form" method="post">
+  {{ formfields }}
+</form>
 
 <body>
   <p style="font-weight: bold; margin-bottom: 20px;">
@@ -32,7 +38,7 @@ Reaction Time movement time
     let rtStartTime = 0;
     let lastClick = performance.now();
 
-    // Position the hold button below the center circle
+    // Position the hold button
     holdButton.style.top = '270px';
     holdButton.style.left = '170px';
     holdButton.style.backgroundColor = 'white';
@@ -82,7 +88,7 @@ Reaction Time movement time
 
     holdButton.addEventListener('mouseup', () => {
       lastClick = performance.now();
-      const rtLeave = performance.now() - rtStartTime
+      const rtLeave = performance.now() - rtStartTime;
       liveSend({ leave_time: rtLeave, trial_index: trialIndex });
       if (!isGreen) {
         showMessage('Too early!');
@@ -105,9 +111,11 @@ Reaction Time movement time
       trialIndex++;
     });
 
+    // Nach 2 Minuten (120000 ms) automatisch speichern
+    setTimeout(() => {
+      document.getElementById('form').submit();
+    }, 120000);
   </script>
 </body>
-
-{{ formfields }}
 
 {{ endblock }}
