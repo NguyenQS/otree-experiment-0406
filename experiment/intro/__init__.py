@@ -5,7 +5,7 @@ import random
 class C(BaseConstants):
     NAME_IN_URL = 'intro'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 1
+    NUM_ROUNDS = 3
 
     # Stroop
     COGNITIVE_TEST_DURATION = 30
@@ -50,6 +50,8 @@ class Player(BasePlayer):
         doc="Number of errors in cognitive test"
     )
 
+    # For Timestamp EEG
+    eeg_timestamp = models.StringField()
 
 class VASPage(Page):
     """
@@ -210,13 +212,26 @@ class PageOne(Page):
 class PageTwo(Page):
     pass
 
+
+
+class CrossPage(Page):  # TODO -> Note: Eine Version der CrossPage mit der wir den Zeitstempel kriegen
+                        # TODO -> Note: Beim Einarbeiten auch die Playervariable eeg_timestamp imd das Bild in _static mit kopieren
+    form_model = 'player'
+    form_fields = ['eeg_timestamp']
+
+    # @staticmethod
+    # def is_displayed(player):
+    #     return player.round_number in [2, 20, 38, 56, 74, 92]  # TODO -> Note: was auch immer hier dann die finale order ist
+
+
 page_sequence = [
+    CrossPage,
     # PageOne,
     # PageTwo,
-    MentalFatigueInventory,
-    VASPage,
-    StroopInstruction,
-    Stroop,
-    StroopResults,
-    ReactionTimeMT,
+    # MentalFatigueInventory,
+    # VASPage,
+    # StroopInstruction,
+    # Stroop,
+    # StroopResults,
+    # ReactionTimeMT,
 ]
