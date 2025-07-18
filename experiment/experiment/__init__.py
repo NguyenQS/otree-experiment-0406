@@ -125,6 +125,9 @@ class Player(BasePlayer):
     sart_errors = models.IntegerField(initial=0)
     sart_avg_reaction_time = models.FloatField(initial=0.0)
 
+    # For Timestamp EEG
+    eeg_timestamp = models.StringField()
+
 
 
 
@@ -312,6 +315,7 @@ class StartPage(Page):
 class CrossPage(Page):
 
     form_model = 'player'  
+    form_fields = ['eeg_timestamp']
 
     @staticmethod
     def is_displayed(player):

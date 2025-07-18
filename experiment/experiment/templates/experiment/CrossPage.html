@@ -1,14 +1,48 @@
 {% extends "global/Page.html" %}
 
 {% block content %}
-  <div style="display: flex; justify-content: center; align-items: center; height: 80vh;">
-    <span style="font-size: 160px;">X</span>
+
+  Please Focus for 15 second on a cross and try to avoid any movement (bodey, eyes, etc.) during this time.<br>
+  To display the cross click the "Start Focus" button. After the 15 Seconds you will be able to proceed to the next page.
+  <br><br>
+
+  <!-- Start-Button -->
+  <button id="startBtn" type="button">Start Focus</button>
+
+  <!-- Kreuzbild (initial versteckt) -->
+  <div id="imageContainer" style="display: none; text-align: center; margin-top: 50px;">
+    <img src="{{ static 'kreuz_fokus.jpg' }}" alt="Fokuskreuz" style="width: 200px;">
   </div>
 
-  <script>
-    setTimeout(function() {
-      document.forms[0].submit();
-    }, 15000); // 15000 Millisekunden = 15 Sekunden
-  </script>
+  <!-- Verstecktes Feld für Zeitstempel -->
+  <input type="hidden" name="eeg_timestamp" id="eegTimestamp">
 
+  <!-- Weiter-Button (initial deaktiviert und unsichtbar) -->
+  <br><br>
+  <button type="submit" id="nextBtn" style="display: none;">Next</button>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+  document.getElementById('startBtn').addEventListener('click', function () {
+    // 1. Start-Button ausblenden
+    this.style.display = 'none';
+
+    // 2. Zeitstempel erfassen
+    const timestamp = new Date().toISOString();
+    document.getElementById('eegTimestamp').value = timestamp;
+
+    // 3. Kreuz anzeigen
+    const image = document.getElementById('imageContainer');
+    image.style.display = 'block';
+
+    // 4. Nach 15 Sekunden: Kreuz ausblenden + Weiter-Button einblenden
+    setTimeout(function () {
+      image.style.display = 'none';
+      document.getElementById('nextBtn').style.display = 'inline-block';
+    }, 15000);
+  });
+</script>
 {% endblock %}
